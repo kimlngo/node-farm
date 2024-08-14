@@ -1,10 +1,10 @@
 const fs = require('fs'); //fs for file system
 const http = require('http'); //built-in http for networking capability
 const path = require('path');
+const url = require('url');
+const slugify = require('slugify');
 
 const replaceTemplate = require('./modules/replaceTemplate');
-
-const url = require('url');
 
 //Constant
 const UTF8 = 'utf-8';
@@ -15,8 +15,8 @@ const API = '/api';
 const TEXT_HTML = 'text/html';
 const HTML_OBJ = { Content_Type: TEXT_HTML };
 const APPLICATION_JSON = 'application/json';
-// const LOCAL_HOST = '127.0.0.1';
-const LOCAL_HOST = '192.168.50.201';
+const LOCAL_HOST = '127.0.0.1';
+
 /*
 //////////////////////////////////////////
 //FILES
@@ -53,6 +53,14 @@ console.log('Reading start.txt ...');
 const data = fs.readFileSync(`${__dirname}/dev-data/data.json`, UTF8);
 const dataObj = JSON.parse(data);
 
+const createSlugify = function (dataObj) {
+  dataObj.forEach(entry => {
+    entry.slug = slugify(entry.productName, { lower: true });
+  });
+};
+
+createSlugify(dataObj);
+
 //load the templates
 const templateOverview = fs.readFileSync(
   `${__dirname}/templates/template-overview.html`,
@@ -86,7 +94,7 @@ const server = http.createServer((req, res) => {
     //Product page
   } else if (pathName === PRODUCT) {
     const product =
-      dataObj[dataObj.findIndex(entry => entry.id === Number(query.id))];
+      dataObj[dataObj.findIndex(entry => entry.slug === query.name)];
 
     if (!product) {
       res.writeHead(404, {
